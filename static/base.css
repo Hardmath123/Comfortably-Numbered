@@ -148,8 +148,8 @@ h4 {
   -margin-left: 10px;
   -margin-right: 10px;
   padding: 30px;
-  width: 50%;
-  min-width: 250px;
+  width: 100%;
+  max-width: 30em;
   margin-left: auto;
   margin-right: auto;
 }
@@ -164,12 +164,13 @@ h4 {
   -moz-column-count: 2;
   -webkit-column-count: 2;
   column-count: 2;
-  width: 80%;
-  min-width: 300px;
+  width: 100%;
+  max-width: 30em;
   margin-left: auto;
   margin-right: auto;
   font-size: 14px;
   color: gray;
+  word-wrap: break-word;
 }
 
 #whoami h2 {
