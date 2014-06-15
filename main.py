@@ -62,12 +62,12 @@ class HomeHandler(webapp2.RequestHandler):
             offset = int(offset);
         else:
             offset = 0
-        
+
         if limit:
             limit = int(limit)
         else:
             limit = 5
-        
+
         posts = BlogPost.all()
         posts.order("-dateposted")
         postsresponse = posts.run(offset=offset, limit=limit)
@@ -114,7 +114,7 @@ class BlogPostHandler(webapp2.RequestHandler):
                 post = BlogPost.all().order("-dateposted").get()
                 id = str(post.key().id())
             comments = BlogComment.all().filter("parentpost = ", id).order("-dateposted").run(limit=1000)
-    
+
         template_values = {
             "post":post,
             "currentuser":users.get_current_user(),
@@ -134,12 +134,12 @@ class BlogPostFormHandler(webapp2.RequestHandler):
         if not users.get_current_user():
             self.redirect("/")
             return;
-        
+
         if not (users.get_current_user().email() in ADMINS):
             self.redirect("/")
 
         post = None
-        
+
         if self.request.get("edit"):
             editing = True
             editid  = self.request.get("edit")
@@ -147,7 +147,7 @@ class BlogPostFormHandler(webapp2.RequestHandler):
         else:
             editing = False
             editid = "-1"
-        
+
         template_values = {
             "currentuser":users.get_current_user(),
             "loginurl":users.create_login_url("/"),
@@ -194,7 +194,7 @@ class CommentCreationHandler(webapp2.RequestHandler):
                 today = datetime.datetime.today()
                 if newestpost and users.get_current_user().email() not in ADMINS: # admins don't have 60-second rule
                     assert (today - newestpost.dateposted).total_seconds() > 60
-                
+
                 com.put()
                 self.redirect("/post/"+self.request.get("parent")+"#comments")
             except AssertionError:
@@ -223,30 +223,31 @@ class BlogCommentDeletionHandler(webapp2.RequestHandler):
 
 class RSSHandler(webapp2.RequestHandler):
     def get(self):
-        items = []
-        posts = BlogPost.all()
-        posts.order("-dateposted")
-        postsresponse = posts.run(limit=1000)
-
-        for post in postsresponse:
-            items.append(
-                rss.RSSItem(
-                    title = post.title,
-                    link = "http://comfortablynumbered.appspot.com/post/"+str(post.key().id()),
-                    description = post.content,
-                    guid = rss.Guid("http://comfortablynumbered.appspot.com/post/"+str(post.key().id())),
-                    pubDate = post.dateposted
-                )
-            )
-
-        self.response.write(rss.RSS2(
-            title = "Comfortably Numbered: the Feed.",
-            link = "http://comfortablynumbered.appspot.com",
-            description = "The latest posts from Comfortably Numbered.",
-
-            lastBuildDate = datetime.datetime.now(),
-            items = items
-        ).to_xml())
+        self.redirect("http://hardmath123.github.io/feed.xml")
+        # items = []
+        # posts = BlogPost.all()
+        # posts.order("-dateposted")
+        # postsresponse = posts.run(limit=1000)
+        #
+        # for post in postsresponse:
+        #     items.append(
+        #         rss.RSSItem(
+        #             title = post.title,
+        #             link = "http://comfortablynumbered.appspot.com/post/"+str(post.key().id()),
+        #             description = post.content,
+        #             guid = rss.Guid("http://comfortablynumbered.appspot.com/post/"+str(post.key().id())),
+        #             pubDate = post.dateposted
+        #         )
+        #     )
+        #
+        # self.response.write(rss.RSS2(
+        #     title = "Comfortably Numbered: the Feed.",
+        #     link = "http://comfortablynumbered.appspot.com",
+        #     description = "The latest posts from Comfortably Numbered.",
+        #
+        #     lastBuildDate = datetime.datetime.now(),
+        #     items = items
+        # ).to_xml())
 
 def Throw404(self):
     template_values = {
@@ -266,6 +267,10 @@ class Robots(webapp2.RequestHandler):
     def get(self):
         self.redirect("/static/robots.txt");
 
+class RedirectToTheNewHomePageHandler(webapp2.RequestHandler):
+    def get(self):
+        self.redirect("http://hardmath123.github.io");
+
 class MailMe(InboundMailHandler):
     def receive(self, mail_message):
         print list(mail_message.bodies('text/plain'))[0][1].decode()
@@ -276,15 +281,16 @@ class MailMe(InboundMailHandler):
               reply_to=mail_message.sender)
 
 app = webapp2.WSGIApplication([
-    ("/", HomeHandler),
-    ("/post/(\d*)\/?", BlogPostHandler),
-    ("/new", BlogPostFormHandler),
-    ("/create", BlogPostCreationHandler),
-    ("/deletepost", BlogPostDeletionHandler),
-    ("/deletecomment", BlogCommentDeletionHandler),
-    ("/comment", CommentCreationHandler),
+    # ("/", HomeHandler),
+    # ("/post/(\d*)\/?", BlogPostHandler),
+    # ("/new", BlogPostFormHandler),
+    # ("/create", BlogPostCreationHandler),
+    # ("/deletepost", BlogPostDeletionHandler),
+    # ("/deletecomment", BlogCommentDeletionHandler),
+    # ("/comment", CommentCreationHandler),
     ("/feed", RSSHandler),
     ("/robots.txt", Robots),
     MailMe.mapping(),
-    ("/.*", NotFound),
+    # ("/.*", NotFound),
+    ("/.*", RedirectToTheNewHomePageHandler),
 ], debug=True)
